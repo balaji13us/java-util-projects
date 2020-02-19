@@ -8,8 +8,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,14 +19,31 @@ https://www.logicbig.com/tutorials/misc/yaml/java-to-yaml.html
  */
 public class ExcelReaderUtility {
 
-    public static final String FilePath = "C:\\Storage\\workspace\\java\\mycode\\java-util-projects\\util-projects\\java-utility-parent\\excel-yaml-utility\\src\\main\\resources\\";
-    public static final String FileName = "sample.xlsx";
-    public static final String fullFileName = FilePath + FileName;
-    public static final String fullYamlFileName = FilePath + "sample.yaml";
+    public static final String FilePath = "C:\\excelToYaml\\";
+    public static final String FileName = "excelFile.xlsx";
+
     public static void main(String[] args) throws IOException, InvalidFormatException {
 
+        String fullExcelFileName = FilePath + FileName;
+        String fullYamlFileName = FilePath + "excelToYaml.yaml";
+        if(args!=null && args.length>2) {
+            if (args[0] != null && !args[0].equals("")) {
+                fullExcelFileName = args[0];
+            }
+            if (args[1] != null && !args[1].equals("")) {
+                fullYamlFileName = args[1];
+            }
+        }
+
+        processExcelFile(fullExcelFileName, fullYamlFileName);
+
+
+    }
+
+    public static void processExcelFile( String fullExcelFileName, String fullYamlFileName) throws IOException, InvalidFormatException{
+
         // Creating a Workbook from an Excel file (.xls or .xlsx)
-        Workbook workbook = WorkbookFactory.create(new File(fullFileName));
+        Workbook workbook = WorkbookFactory.create(new File(fullExcelFileName));
 
         // Retrieving the number of sheets in the Workbook
         System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
@@ -98,7 +113,7 @@ public class ExcelReaderUtility {
         for(int colIndex=1; colIndex<colCount ; colIndex++){
             cell = row.getCell(colIndex);
             String cellValue = dataFormatter.formatCellValue(cell);
-            System.out.print(colIndex + "-" + cellValue + "\t");
+            //System.out.print(colIndex + "-" + cellValue + "\t");
             if(null==cellValue || cellValue.equals("")){
                 break;
             }
@@ -116,48 +131,5 @@ public class ExcelReaderUtility {
         if(rowIndex!=0) {
             dataMap.put(propertyName, fieldPropertiesMap);
         }
-    }
-
-    public static void constructMap (Row row,
-                                     Map<Integer, String> fieldNameMap,
-                                     Map<String, String> fieldPropertiesMap,
-                                     Map<String, Map<String, String>> dataMap,
-                                     int rowIndex){
-
-        fieldPropertiesMap = new LinkedHashMap<>();
-        // Create a DataFormatter to format and get each cell's value as String
-        DataFormatter dataFormatter = new DataFormatter();
-        int colIndex = 0;
-        String propertyName = "";
-        System.out.println();
-
-
-
-        for(Cell cell: row) {
-            String cellValue = dataFormatter.formatCellValue(cell);
-            if(null==cellValue || cellValue.equals("")){
-                colIndex++;
-                break;
-            }
-            System.out.print(cellValue + "\t");
-            if(rowIndex==0){
-                if(colIndex!=0) {
-                    fieldNameMap.put(colIndex, cellValue);
-                }
-            }else{
-
-                if(colIndex==1){
-                    propertyName = cellValue;
-                }else if(colIndex!=0) {
-                    fieldPropertiesMap.put(fieldNameMap.get(colIndex), cellValue);
-                }
-            }
-            colIndex++;
-        }
-        if(rowIndex!=0) {
-            dataMap.put(propertyName, fieldPropertiesMap);
-        }
-
-
     }
 }
