@@ -1,0 +1,51 @@
+firstName:
+  type: String
+  description: First Name
+lastName:
+  type: String
+  description: Last Name
+age:
+  type: number
+  description: Age
+  format: int32
+dateOfBirth:
+  type: String
+  description: Date Of Birth
+  format: date
+  minLength: '2'
+  maxLength: '20'
+  example: 10/10/84
+  required: 'TRUE'
+email:
+  type: String
+  description: Email
+  format: email
+  minLength: '0'
+  maxLength: '100'
+  example: asdfa@abc.com
+  required: 'TRUE'
+phoneNumber:
+  type: number
+  description: Phone Numbers
+  format: numbers only
+address1:
+  type: String
+  description: Address Line 1
+address2:
+  type: String
+  description: Address Line 2
+city:
+  type: String
+  description: City
+zip:
+  type: String
+  description: Zip
+stateCode:
+  type: String
+  description: State Code
+countryCode:
+  type: String
+  description: Country Code
+title:
+  type: String
+  description: Title
