@@ -2,14 +2,15 @@ package bs.java.utility.excelToYaml;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 
 /*
@@ -20,27 +21,50 @@ https://www.logicbig.com/tutorials/misc/yaml/java-to-yaml.html
 public class ExcelReaderUtility {
 
     public static final String FilePath = "C:\\excelToYaml\\";
-    public static final String FileName = "excelFile.xlsx";
+    public static final String ExcelFileName = "excelFile.xlsx";
+    public static final String ExcelToYamlFileName = "excelToYaml.yaml";
+    public static final String yamlFileName = "yamlFile.yaml";
+    public static final String yamlToExcelFileName = "yamlToExcel.xlsx";
 
     public static void main(String[] args) throws IOException, InvalidFormatException {
 
-        String fullExcelFileName = FilePath + FileName;
-        String fullYamlFileName = FilePath + "excelToYaml.yaml";
-        if(args!=null && args.length>2) {
-            if (args[0] != null && !args[0].equals("")) {
-                fullExcelFileName = args[0];
-            }
-            if (args[1] != null && !args[1].equals("")) {
-                fullYamlFileName = args[1];
+        String fullExcelFileName = FilePath + ExcelFileName;
+        String fullExcelToYamlFileName = FilePath + ExcelToYamlFileName;
+        String fullYamlFileName = FilePath + yamlFileName;
+        String fullYamlToExcelFileName = FilePath + yamlToExcelFileName;
+
+        Scanner scanner = new Scanner(System.in);
+
+        boolean loopin = true;
+
+        while (loopin){
+            System.out.println("Read Excel File and Convert to Yaml: 1 ");
+            System.out.println("Read Yaml File and Convert to Excel: 2 ");
+            System.out.println("Exit: 3 ");
+            System.out.print("Enter the Option: ");
+            String userOption = scanner.next();
+
+            if(userOption.equalsIgnoreCase("1")){
+                loopin = false;
+                processExcelToYamlFile(fullExcelFileName, fullExcelToYamlFileName);
+            }else if(userOption.equalsIgnoreCase("2")){
+                loopin = false;
+                processYamlToExcelFile(fullYamlFileName, fullYamlToExcelFileName);
+            } else if(userOption.equalsIgnoreCase("3")){
+                loopin = false;
+                System.exit(0);
+            } else{
+                System.out.println("Invalid Option!!!! ");
+
             }
         }
 
-        processExcelFile(fullExcelFileName, fullYamlFileName);
+
 
 
     }
 
-    public static void processExcelFile( String fullExcelFileName, String fullYamlFileName) throws IOException, InvalidFormatException{
+    public static void processExcelToYamlFile(String fullExcelFileName, String fullYamlFileName) throws IOException, InvalidFormatException{
 
         // Creating a Workbook from an Excel file (.xls or .xlsx)
         Workbook workbook = WorkbookFactory.create(new File(fullExcelFileName));
@@ -60,7 +84,7 @@ public class ExcelReaderUtility {
         int rowIndex = 0, colIndex = 0;
         for (Row row: sheet) {
 
-            constructYamlMap(row, fieldNameMap, fieldPropertiesMap, dataMap, rowIndex);
+            constructYamlMapFromExcelRow(row, fieldNameMap, fieldPropertiesMap, dataMap, rowIndex);
 
             rowIndex++;
         }
@@ -86,6 +110,105 @@ public class ExcelReaderUtility {
         workbook.close();
     }
 
+    public static void processYamlToExcelFile(String fullYamlFileName, String fullYamlToExcelFileName) throws IOException {
+
+        Map<String, Map<String, String>>  yamlData =  readYamlFile(fullYamlFileName);
+        createExcelFileFromYamlData(fullYamlToExcelFileName, yamlData );
+    }
+
+    public static Map<Integer, String> createFieldsMap (){
+        Map<Integer, String> fieldsMap = new LinkedHashMap<>();
+        fieldsMap.put(1, "Field Name");
+        fieldsMap.put(2, "type");
+        fieldsMap.put(3, "description");
+        fieldsMap.put(4, "format");
+        fieldsMap.put(5, "minLength");
+        fieldsMap.put(6, "maxLength");
+        fieldsMap.put(7, "example");
+        fieldsMap.put(8, "required");
+        fieldsMap.put(9, "$ref");
+        return fieldsMap;
+    }
+
+    public static Map<String, Integer> createFieldsIntegerMap (){
+        Map<String, Integer> fieldsIntegerMap = new LinkedHashMap<>();
+        fieldsIntegerMap.put( "Field Name",1);
+        fieldsIntegerMap.put( "type",2);
+        fieldsIntegerMap.put( "description",3);
+        fieldsIntegerMap.put( "format",4);
+        fieldsIntegerMap.put( "minLength",5);
+        fieldsIntegerMap.put( "maxLength",6);
+        fieldsIntegerMap.put( "example",7);
+        fieldsIntegerMap.put( "required",8);
+        fieldsIntegerMap.put( "$ref",9);
+        return fieldsIntegerMap;
+    }
+    private static int rowIndex = 0, colIndex = 0;
+    private static void createExcelFileFromYamlData(String fullYamlToExcelFileName, Map<String, Map<String, String>> yamlData) {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Yaml To Excel");
+        System.out.println("createExcelFileFromYamlData ");
+        Map<Integer, String> fieldsMap = createFieldsMap();
+        Map<String, Integer> fieldsIntegerMap = createFieldsIntegerMap ();
+        rowIndex = 0;
+        colIndex = 0;
+        Row rowheader = sheet.createRow(rowIndex++);
+        System.out.println("Headers Map ");
+        System.out.println("**************");
+        Cell cellFirstCell = rowheader.createCell(0);
+        cellFirstCell.setCellValue("S.NO");
+        fieldsMap.forEach((k, v) -> {
+            System.out.println("Key = " + k + ", Value = " + v);
+            Cell cellHeader = rowheader.createCell(++colIndex);
+            cellHeader.setCellValue((String) v);
+        });
+        System.out.println("**************");
+        colIndex = 0;
+        System.out.println("Data");
+
+        yamlData.forEach((k,v) -> {
+            Row rowfields = sheet.createRow(rowIndex);
+            System.out.println("Key = " + k + ", Value = " + v);
+            System.out.println("**************");
+            Cell cellFieldName = rowfields.createCell(0);
+            cellFieldName.setCellValue(rowIndex );
+            cellFieldName = rowfields.createCell(1);
+            cellFieldName.setCellValue((String) k);
+            v.forEach((key,value) -> {
+                System.out.println("Key = " + key + ", Value = " + value);
+                int fieldColPosition = fieldsIntegerMap.get(key);
+                Cell cell = rowfields.createCell(fieldColPosition);
+                cell.setCellValue((String) value);
+                colIndex++;
+            });
+            System.out.println("**************");
+            rowIndex++;
+        });
+
+
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(fullYamlToExcelFileName);
+            workbook.write(outputStream);
+        } catch (Exception e) {
+            System.out.println("**************");
+            System.out.println(e.getMessage() + " " + e.getCause());
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public  static Map<String, Map<String, String>> readYamlFile (String fullSourceYamlFIleName) throws IOException {
+        Yaml yaml = new Yaml();
+        FileInputStream fileInputStream = readFromFile(fullSourceYamlFIleName);
+        Map<String, Map<String, String>> YamlData = yaml.load(fileInputStream);
+        System.out.println("Reading YAML File");
+        System.out.println(YamlData);
+        fileInputStream.close();
+        return YamlData;
+    }
+
     public static void writeToFile(String fileName, String fileContent)
             throws IOException {
         FileOutputStream outputStream = new FileOutputStream(fileName);
@@ -95,11 +218,19 @@ public class ExcelReaderUtility {
         outputStream.close();
     }
 
-    public static void constructYamlMap (Row row,
-                                     Map<Integer, String> fieldNameMap,
-                                     Map<String, String> fieldPropertiesMap,
-                                     Map<String, Map<String, String>> dataMap,
-                                     int rowIndex) {
+    public static FileInputStream readFromFile(String fileName)
+            throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(fileName);
+
+
+        return fileInputStream;
+    }
+    private static  int  colStaticCount = 0;
+    public static void constructYamlMapFromExcelRow(Row row,
+                                                    Map<Integer, String> fieldNameMap,
+                                                    Map<String, String> fieldPropertiesMap,
+                                                    Map<String, Map<String, String>> dataMap,
+                                                    int rowIndex) {
 
         fieldPropertiesMap = new LinkedHashMap<>();
         // Create a DataFormatter to format and get each cell's value as String
@@ -108,20 +239,23 @@ public class ExcelReaderUtility {
         System.out.println();
 
         Cell cell = null;
-        int  colCount = row.getPhysicalNumberOfCells();
-        System.out.println(rowIndex);
-        for(int colIndex=1; colIndex<colCount ; colIndex++){
+        if(rowIndex==0) {
+            colStaticCount = row.getPhysicalNumberOfCells();
+        }
+        System.out.println("colStaticCount=" + colStaticCount);
+        for(int colIndex=1; colIndex<colStaticCount ; colIndex++){
             cell = row.getCell(colIndex);
+            System.out.print("cell.getStringCellValue=" + cell + "\t");
+
             String cellValue = dataFormatter.formatCellValue(cell);
-            //System.out.print(colIndex + "-" + cellValue + "\t");
+            System.out.print(colIndex + "-" + cellValue + "\t");
             if(null==cellValue || cellValue.equals("")){
-                break;
+                continue;
             }
             if(rowIndex==0){
                     fieldNameMap.put(colIndex, cellValue);
             }else{
-
-                if(colIndex==1){
+                 if(colIndex==1){
                     propertyName = cellValue;
                 } else {
                     fieldPropertiesMap.put(fieldNameMap.get(colIndex), cellValue);
