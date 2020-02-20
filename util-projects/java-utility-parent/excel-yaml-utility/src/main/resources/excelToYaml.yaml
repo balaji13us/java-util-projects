@@ -1,13 +1,22 @@
 firstName:
   type: String
   description: First Name
+  maxLength: '50'
+  example: John
+  required: 'TRUE'
 lastName:
   type: String
   description: Last Name
+  maxLength: '213'
+  example: Doe
+  required: 'TRUE'
 age:
   type: number
   description: Age
   format: int32
+  maxLength: '141'
+  example: '45'
+  required: 'TRUE'
 dateOfBirth:
   type: String
   description: Date Of Birth
@@ -24,28 +33,50 @@ email:
   maxLength: '100'
   example: asdfa@abc.com
   required: 'TRUE'
+phone:
+  description: Phone Numbers
+  required: 'FALSE'
+  $ref: phone.yaml
+address1:
+  type: String
+  description: Address Line 1
+  example: 123 Dave Street
+  required: 'FALSE'
+  $ref: phone.yaml
+address2:
+  type: String
+  description: Address Line 2
+  example: Apt 123
+  required: 'FALSE'
+city:
+  type: String
+  description: City
+  example: Phoenix
+  required: 'FALSE'
+zip:
+  type: String
+  description: Zip
+  example: '321435'
+  required: 'FALSE'
+stateCode:
+  type: String
+  description: State Code
+  example: AZ
+  required: 'FALSE'
+countryCode:
+  type: String
+  description: Country Code
+  example: USA
+  required: 'FALSE'
+title:
+  type: String
+  description: Title
+  example: Mr.
+  required: 'FALSE'
 phoneNumber:
   type: number
   description: Phone Numbers
   format: numbers only
-address1:
-  type: String
-  description: Address Line 1
-address2:
-  type: String
-  description: Address Line 2
-city:
-  type: String
-  description: City
-zip:
-  type: String
-  description: Zip
-stateCode:
-  type: String
-  description: State Code
-countryCode:
-  type: String
-  description: Country Code
-title:
-  type: String
-  description: Title
+  maxLength: '10'
+  example: '342342'
+  required: 'TRUE'
